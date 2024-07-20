@@ -1,0 +1,19 @@
+name: E2E
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  e2e-default:
+    runs-on: ubuntu-20.04
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Placeholder
+        run: echo "Placeholder"
