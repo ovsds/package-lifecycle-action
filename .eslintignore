@@ -1,0 +1,7 @@
+dist/
+lib/
+node_modules/
+tests/
+
+commitlint.config.js
+vitest.config.ts

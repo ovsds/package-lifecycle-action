@@ -1,0 +1,5 @@
+ARG TEST_ARG=default
+FROM scratch
+ENV TEST_ENV=$TEST_ARG
+WORKDIR /
+

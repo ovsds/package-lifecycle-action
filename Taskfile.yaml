@@ -5,6 +5,11 @@ silent: true
 vars:
   NENV: "node_modules"
 
+includes:
+  github_test_images:
+    dir: tests/integration/.test_images
+    taskfile: tests/integration/.test_images
+
 tasks:
   _prettier:
     internal: true
@@ -20,8 +25,7 @@ tasks:
     desc: Initialize project environment
     cmds:
       - echo 'Installing node version...'
-      - task: _with_nvm
-        vars: { COMMAND: "nvm install" }
+      - source ${HOME}/.nvm/nvm.sh && nvm install
 
       - echo 'Installing node dependencies...'
       - task: _with_nvm
@@ -34,16 +38,26 @@ tasks:
   lint:
     desc: Lint project
     cmds:
-      - echo 'Running prettier checks...'
-      - task: _prettier
-        vars: { COMMAND: "--check ." }
+      - task: _with_nvm
+        vars: { COMMAND: "npm run lint:check" }
 
   lint-fix:
     desc: Lint fix project
     cmds:
-      - echo 'Running prettier fixes...'
-      - task: _prettier
-        vars: { COMMAND: "--write ." }
+      - task: _with_nvm
+        vars: { COMMAND: "npm run lint:fix" }
+
+  test:
+    desc: Test project
+    cmds:
+      - task: _with_nvm
+        vars: { COMMAND: "npm run test" }
+
+  package:
+    desc: Pack project
+    cmds:
+      - task: _with_nvm
+        vars: { COMMAND: "npm run package" }
 
   clean:
     desc: Clean project environment
@@ -76,10 +90,18 @@ tasks:
     vars:
       TEMPLATE_PATH: '{{.TEMPLATE_PATH | default "https://github.com/ovsds/template-repository-github-action"}}'
 
-  # CI-specific
-
-  ci-init:
-    desc: Initialize project environment in CI
+  login-gh-cli:
+    desc: Login to GitHub CLI
     cmds:
-      - echo 'Installing node dependencies...'
-      - npm clean-install
+      - echo 'Logging to GitHub CLI...'
+      - gh auth login
+        --scopes=read:packages,write:packages,delete:packages
+        --hostname github.com
+        --git-protocol https
+        --web
+
+  login-ghcr:
+    desc: Login to GitHub Container Registry
+    cmds:
+      - echo 'Logging to GitHub Container Registry...'
+      - gh config get -h github.com oauth_token | docker login ghcr.io -u USERNAME --password-stdin
