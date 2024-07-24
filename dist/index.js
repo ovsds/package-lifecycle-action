@@ -62,6 +62,9 @@ class Action {
         this.actionInput = actionInput;
         this.githubClient = githubClient;
         this.packageVersionService = packageVersionService;
+        this.actionOptions = {
+            retainUntaggedDriftSeconds: 10 * 60, // 10 minutes
+        };
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -80,8 +83,8 @@ class Action {
             const expired = reasonedExpired.map((item) => item.version);
             console.info(`Expired package versions:\n${reasonedPackageVersionsToString(reasonedExpired)}\n`);
             console.info(`Retained tagged top: ${this.actionInput.retainedTaggedTop}.`);
-            console.info(`Retain untagged: ${this.actionInput.retainUntagged}.`);
-            const reasonedRetained = yield this.packageVersionService.getRetainedPackageVersions(all, filtered, this.actionInput.retainedTaggedTop, this.actionInput.retainUntagged);
+            console.info(`Retain untagged: ${this.actionInput.retainUntagged}, drift: ${this.actionOptions.retainUntaggedDriftSeconds} seconds.`);
+            const reasonedRetained = yield this.packageVersionService.getRetainedPackageVersions(all, filtered, this.actionInput.retainedTaggedTop, this.actionInput.retainUntagged, this.actionOptions.retainUntaggedDriftSeconds);
             const retained = reasonedRetained.map((item) => item.version);
             console.info(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}\n`);
             const unwanted = yield this.packageVersionService.getUnwantedPackageVersions(expired, retained);
@@ -393,7 +396,7 @@ class GithubPackageVersionService {
             return result;
         });
     }
-    getRetainedPackageVersions(allPackageVersions, filteredPackageVersions, retainedTaggedTop, retainUntagged) {
+    getRetainedPackageVersions(allPackageVersions, filteredPackageVersions, retainedTaggedTop, retainUntagged, retainUntaggedDriftSeconds) {
         return __awaiter(this, void 0, void 0, function* () {
             if (filteredPackageVersions.length === 0) {
                 return [];
@@ -406,16 +409,26 @@ class GithubPackageVersionService {
             }
             const result = [];
             let retainedCount = 0;
+            let lastRetainedCreatedAt = filteredPackageVersions[0].createdAt;
             for (const version of filteredPackageVersions) {
-                if (version.tags.length > 0) {
-                    result.push({ version, reason: "Retained tagged" });
-                    retainedCount++;
-                    if (retainedCount >= retainedTaggedTop) {
+                if (version.tags.length === 0) {
+                    if (!retainUntagged) {
+                        continue;
+                    }
+                    if (retainedCount < retainedTaggedTop) {
+                        result.push({ version, reason: "Retained untagged" });
+                    }
+                    else if (lastRetainedCreatedAt.getTime() - version.createdAt.getTime() < retainUntaggedDriftSeconds * 1000) {
+                        result.push({ version, reason: "Retained untagged due to drift" });
+                    }
+                    else {
                         break;
                     }
                 }
-                else if (retainUntagged) {
-                    result.push({ version, reason: "Retained untagged" });
+                else if (retainedCount < retainedTaggedTop) {
+                    result.push({ version, reason: "Retained tagged" });
+                    lastRetainedCreatedAt = version.createdAt;
+                    retainedCount++;
                 }
             }
             return result;

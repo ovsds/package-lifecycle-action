@@ -33,6 +33,7 @@ export interface GithubPackageVersionServiceInterface {
     filteredPackageVersions: githubModels.PackageVersion[],
     retainedTaggedTop: number,
     retainUntagged: boolean,
+    retainUntaggedDriftSeconds: number,
   ): Promise<githubModels.ReasonedPackageVersion[]>;
 
   getUnwantedPackageVersions(
@@ -126,6 +127,7 @@ export class GithubPackageVersionService implements GithubPackageVersionServiceI
     filteredPackageVersions: githubModels.PackageVersion[],
     retainedTaggedTop: number,
     retainUntagged: boolean,
+    retainUntaggedDriftSeconds: number,
   ): Promise<githubModels.ReasonedPackageVersion[]> {
     if (filteredPackageVersions.length === 0) {
       return [];
@@ -139,16 +141,24 @@ export class GithubPackageVersionService implements GithubPackageVersionServiceI
 
     const result: githubModels.ReasonedPackageVersion[] = [];
     let retainedCount = 0;
+    let lastRetainedCreatedAt = filteredPackageVersions[0].createdAt;
 
     for (const version of filteredPackageVersions) {
-      if (version.tags.length > 0) {
-        result.push({ version, reason: "Retained tagged" });
-        retainedCount++;
-        if (retainedCount >= retainedTaggedTop) {
+      if (version.tags.length === 0) {
+        if (!retainUntagged) {
+          continue;
+        }
+        if (retainedCount < retainedTaggedTop) {
+          result.push({ version, reason: "Retained untagged" });
+        } else if (lastRetainedCreatedAt.getTime() - version.createdAt.getTime() < retainUntaggedDriftSeconds * 1000) {
+          result.push({ version, reason: "Retained untagged due to drift" });
+        } else {
           break;
         }
-      } else if (retainUntagged) {
-        result.push({ version, reason: "Retained untagged" });
+      } else if (retainedCount < retainedTaggedTop) {
+        result.push({ version, reason: "Retained tagged" });
+        lastRetainedCreatedAt = version.createdAt;
+        retainedCount++;
       }
     }
 
