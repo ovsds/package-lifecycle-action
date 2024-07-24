@@ -4,6 +4,7 @@
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Package%20Lifecycle-blue.svg)](https://github.com/marketplace/actions/package-lifecycle)
 
 Deletes package versions based on a lifecycle policy.
+Highly recommended to be used with dry-run first to validate the policy before actually deleting any package versions.
 
 ## Usage
 
