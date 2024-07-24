@@ -1,0 +1,51 @@
+{
+  "private": true,
+  "name": "package-lifecycle-action",
+  "description": "GitHub Action to delete package versions based on a lifecycle policy",
+  "main": "lib/main.js",
+  "dependencies": {
+    "@actions/core": "1.10.1",
+    "@actions/github": "6.0.0",
+    "@octokit/rest": "21.0.1"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.3",
+    "@commitlint/config-conventional": "^19.0.3",
+    "@gravity-ui/eslint-config": "^3.1.1",
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^7.17.0",
+    "@vercel/ncc": "^0.38.1",
+    "eslint": "^8.57.0",
+    "husky": "^9.1.1",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1",
+    "vitest": "^2.0.4"
+  },
+  "hooks": {
+    "pre-commit": "lint-staged",
+    "commit-msg": "commitlint"
+  },
+  "lint-staged": {
+    "*.{md,yaml,json,js}": [
+      "prettier --check"
+    ],
+    "*.{ts,tsx}": [
+      "prettier --check",
+      "eslint"
+    ]
+  },
+  "scripts": {
+    "prepare": "husky",
+    "lint:check": "npm run lint:check:prettier && npm run lint:check:eslint",
+    "lint:check:eslint": "eslint .",
+    "lint:check:prettier": "prettier --check .",
+    "lint:fix": "npm run lint:fix:prettier && npm run lint:fix:eslint",
+    "lint:fix:eslint": "eslint . --fix",
+    "lint:fix:prettier": "prettier --write .",
+    "test": "vitest",
+    "test:unit": "vitest tests/unit",
+    "test:integration": "vitest tests/integration",
+    "build": "tsc",
+    "package": "rm -rf ./lib ./dist && npm run build && ncc build"
+  }
+}

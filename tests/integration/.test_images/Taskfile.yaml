@@ -1,0 +1,41 @@
+version: 3
+
+vars:
+  GITHUB_IMAGE_ETERNAL_TAG: eternal
+
+tasks:
+  configure-docker-container-builder:
+    desc: Configure buildx for multi-arch builds
+    cmds:
+      - echo 'Configuring buildx...'
+      - docker buildx create
+        --driver docker-container
+        --use
+
+  push:
+    desc: Push test tags
+    cmds:
+      - docker buildx bake
+        --file docker-bake.hcl
+        --push
+
+  push-eternal-tag:
+    desc: Push eternal tags
+    silent: false
+    cmds:
+      - docker build
+        --tag ghcr.io/{{.GITHUB_TEST_USER}}/{{.GITHUB_TEST_IMAGE_NAME}}:{{.GITHUB_IMAGE_ETERNAL_TAG}}
+        --tag "ghcr.io/{{.GITHUB_TEST_ORGANIZATION}}/{{.GITHUB_TEST_IMAGE_NAME}}:{{.GITHUB_IMAGE_ETERNAL_TAG}}"
+        --build-arg TEST_ARG=eternal
+        --push
+        .
+
+  push-to-delete-tag:
+    desc: Push tags to delete
+    cmds:
+      - docker build
+        --tag ghcr.io/{{.GITHUB_TEST_USER}}/{{.GITHUB_TEST_IMAGE_NAME}}:{{.GITHUB_TEST_IMAGE_TAG_TO_DELETE}}
+        --tag "ghcr.io/{{.GITHUB_TEST_ORGANIZATION}}/{{.GITHUB_TEST_IMAGE_NAME}}:{{.GITHUB_TEST_IMAGE_TAG_TO_DELETE}}"
+        --build-arg TEST_ARG=to-delete
+        --push
+        .

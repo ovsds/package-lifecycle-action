@@ -1,0 +1,54 @@
+name: Check PR
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  check-pr:
+    runs-on: ubuntu-20.04
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup_environment
+
+      - name: Install Dependencies
+        run: |
+          task init
+
+      - name: Lint PR
+        run: |
+          task lint
+
+      - name: Test PR
+        run: |
+          task test
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TEST_USER: "ovsds"
+          GITHUB_TEST_ORGANIZATION: "ovsds-example-organization"
+          GITHUB_TEST_IMAGE_NAME: "package-lifecycle-action/test-image"
+          GITHUB_TEST_IMAGE_TAG: "test-tag"
+          GITHUB_TEST_IMAGE_TAG_TO_DELETE: "test-tag-to-delete"
+
+      - name: Package PR
+        run: |
+          task package
+
+      - name: Compare the expected and actual dist/ directories
+        run: |
+          if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
+            echo "Detected uncommitted changes after build.  See status below:"
+            git diff
+            exit 1
+          fi

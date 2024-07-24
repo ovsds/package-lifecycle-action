@@ -1,0 +1,32 @@
+name: E2E
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  e2e-default:
+    runs-on: ubuntu-20.04
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test Run
+        uses: ./
+        with:
+          package-name: package-lifecycle-action/test-image
+          package-type: container
+          tag-regex: "^test-tag$"
+          untagged: true
+          expire-period-days: 0
+          retained-tagged-top: 0
+          retain-untagged: true
+          dry-run: true

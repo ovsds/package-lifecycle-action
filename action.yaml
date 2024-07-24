@@ -1,0 +1,63 @@
+name: "Package Lifecycle"
+description: "Deletes package versions based on a lifecycle policy."
+
+inputs:
+  package-name:
+    description: Name of the package.
+    required: true
+
+  package-type:
+    description: "Type of the package. Supported values: container."
+    default: "container"
+
+  owner:
+    description: Owner of the repository.
+    default: ${{ github.repository_owner }}
+    required: false
+
+  tag-regex:
+    description: Regex to match version tags to be considered for deletion.
+    default: ".*"
+    required: false
+
+  untagged:
+    description: Whether to apply to untagged versions.
+    default: "false"
+    required: false
+
+  expire-period-days:
+    description: >
+      The amount of days that must elapse after the creation of a package version
+      in order for it to be eligible for automatic deletion.
+    default: "30"
+    required: false
+
+  retained-tagged-top:
+    description: >
+      The number of package versions (matching the specified tag filter) that must be kept,
+      even if the expire-period has already expired.
+    default: "1"
+    required: false
+
+  retain-untagged:
+    description: Whether to retain untagged versions not older then the oldest retained tagged version.
+    default: "true"
+    required: false
+
+  dry-run:
+    description: Whether to perform a dry run, without actually deleting any package versions.
+    default: "false"
+    required: false
+
+  github-token:
+    description: "GitHub token to authenticate with the GitHub API, scope: 'packages: write'."
+    default: ${{ github.token }}
+    required: false
+
+runs:
+  using: node20
+  main: dist/index.js
+
+branding:
+  icon: package
+  color: blue

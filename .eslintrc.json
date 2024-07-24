@@ -1,0 +1,19 @@
+{
+  "plugins": ["@typescript-eslint"],
+  "extends": ["@gravity-ui/eslint-config", "@gravity-ui/eslint-config/import-order"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 9,
+    "sourceType": "module",
+    "project": "./tsconfig.json",
+    "createDefaultProgram": true
+  },
+  "rules": {
+    "no-console": "off", // TODO: remove after adding logger to action settings
+    "no-constant-condition": "off"
+  },
+  "env": {
+    "node": true,
+    "es6": true
+  }
+}
