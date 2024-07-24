@@ -29,7 +29,8 @@ export interface GithubPackageVersionServiceInterface {
   ): Promise<githubModels.ReasonedPackageVersion[]>;
 
   getRetainedPackageVersions(
-    packageVersions: githubModels.PackageVersion[],
+    allPackageVersions: githubModels.PackageVersion[],
+    filteredPackageVersions: githubModels.PackageVersion[],
     retainedTaggedTop: number,
     retainUntagged: boolean,
   ): Promise<githubModels.ReasonedPackageVersion[]>;
@@ -121,21 +122,25 @@ export class GithubPackageVersionService implements GithubPackageVersionServiceI
   }
 
   async getRetainedPackageVersions(
-    packageVersions: githubModels.PackageVersion[],
+    allPackageVersions: githubModels.PackageVersion[],
+    filteredPackageVersions: githubModels.PackageVersion[],
     retainedTaggedTop: number,
     retainUntagged: boolean,
   ): Promise<githubModels.ReasonedPackageVersion[]> {
-    if (packageVersions.length === 0) {
+    if (filteredPackageVersions.length === 0) {
       return [];
     }
     if (retainedTaggedTop === 0) {
+      if (allPackageVersions.length === filteredPackageVersions.length) {
+        return [{ version: filteredPackageVersions[0], reason: "Retained newest, impossible to delete all versions" }];
+      }
       return [];
     }
 
     const result: githubModels.ReasonedPackageVersion[] = [];
     let retainedCount = 0;
 
-    for (const version of packageVersions) {
+    for (const version of filteredPackageVersions) {
       if (version.tags.length > 0) {
         result.push({ version, reason: "Retained tagged" });
         retainedCount++;

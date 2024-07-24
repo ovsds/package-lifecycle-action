@@ -92,6 +92,7 @@ export class Action {
     console.info(`Retained tagged top: ${this.actionInput.retainedTaggedTop}.`);
     console.info(`Retain untagged: ${this.actionInput.retainUntagged}.`);
     const reasonedRetained = await this.packageVersionService.getRetainedPackageVersions(
+      all,
       filtered,
       this.actionInput.retainedTaggedTop,
       this.actionInput.retainUntagged,
