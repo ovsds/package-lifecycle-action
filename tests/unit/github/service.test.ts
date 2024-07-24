@@ -230,7 +230,7 @@ describe("getRetainedPackageVersions", () => {
   test("with empty packageVersions", async () => {
     const service = new githubServices.GithubPackageVersionService();
 
-    const result = await service.getRetainedPackageVersions([], [], 1, true);
+    const result = await service.getRetainedPackageVersions([], [], 1, true, 0);
     expect(result).toEqual([]);
   });
 
@@ -243,7 +243,7 @@ describe("getRetainedPackageVersions", () => {
     const allPackageVersions = [...packageVersions, { name: "v4", tags: [], createdAt: new Date("2022-01-04") }];
     const service = new githubServices.GithubPackageVersionService();
 
-    const result = await service.getRetainedPackageVersions(allPackageVersions, packageVersions, 0, true);
+    const result = await service.getRetainedPackageVersions(allPackageVersions, packageVersions, 0, true, 0);
     expect(result).toEqual([]);
   });
 
@@ -256,7 +256,7 @@ describe("getRetainedPackageVersions", () => {
     const allPackageVersions = [...packageVersions];
     const service = new githubServices.GithubPackageVersionService();
 
-    const result = await service.getRetainedPackageVersions(allPackageVersions, packageVersions, 0, true);
+    const result = await service.getRetainedPackageVersions(allPackageVersions, packageVersions, 0, true, 0);
     expect(result).toEqual([
       { version: packageVersions[0], reason: "Retained newest, impossible to delete all versions" },
     ]);
@@ -270,7 +270,7 @@ describe("getRetainedPackageVersions", () => {
     ];
     const service = new githubServices.GithubPackageVersionService();
 
-    const result = await service.getRetainedPackageVersions([], packageVersions, 1, true);
+    const result = await service.getRetainedPackageVersions([], packageVersions, 1, true, 0);
     expect(result).toEqual([{ version: packageVersions[0], reason: "Retained tagged" }]);
   });
 
@@ -284,11 +284,30 @@ describe("getRetainedPackageVersions", () => {
     ];
     const service = new githubServices.GithubPackageVersionService();
 
-    const result = await service.getRetainedPackageVersions([], packageVersions, 1, true);
+    const result = await service.getRetainedPackageVersions([], packageVersions, 1, true, 0);
     expect(result).toEqual([
       { version: packageVersions[0], reason: "Retained untagged" },
       { version: packageVersions[1], reason: "Retained untagged" },
       { version: packageVersions[2], reason: "Retained tagged" },
+    ]);
+  });
+
+  test("with retainedTop = 1 and retainUntagged = true and drift", async () => {
+    const packageVersions = [
+      { name: "v4", tags: [], createdAt: new Date("2022-01-04") },
+      { name: "v3", tags: ["tag3"], createdAt: new Date("2022-01-03T10:00:00") },
+      { name: "retained with drift", tags: [], createdAt: new Date("2022-01-03T09:59:31") },
+      { name: "not retained with drift", tags: [], createdAt: new Date("2022-01-03T09:59:30") },
+      { name: "v2", tags: [], createdAt: new Date("2022-01-02") },
+      { name: "v1", tags: ["tag1"], createdAt: new Date("2022-01-01") },
+    ];
+    const service = new githubServices.GithubPackageVersionService();
+
+    const result = await service.getRetainedPackageVersions([], packageVersions, 1, true, 30);
+    expect(result).toEqual([
+      { version: packageVersions[0], reason: "Retained untagged" },
+      { version: packageVersions[1], reason: "Retained tagged" },
+      { version: packageVersions[2], reason: "Retained untagged due to drift" },
     ]);
   });
 });

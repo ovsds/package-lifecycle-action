@@ -31,6 +31,10 @@ interface ActionResult {
   };
 }
 
+interface ActionOptions {
+  retainUntaggedDriftSeconds: number;
+}
+
 export class Action {
   static fromInput(actionInput: input.Input): Action {
     return new Action(
@@ -41,6 +45,7 @@ export class Action {
   }
 
   private readonly actionInput: input.Input;
+  private readonly actionOptions: ActionOptions;
   private readonly githubClient: githubClients.GithubClientInterface;
   private readonly packageVersionService: githubServices.GithubPackageVersionServiceInterface;
 
@@ -52,6 +57,10 @@ export class Action {
     this.actionInput = actionInput;
     this.githubClient = githubClient;
     this.packageVersionService = packageVersionService;
+
+    this.actionOptions = {
+      retainUntaggedDriftSeconds: 10 * 60, // 10 minutes
+    };
   }
 
   async run(): Promise<ActionResult> {
@@ -86,12 +95,15 @@ export class Action {
     console.info(`Expired package versions:\n${reasonedPackageVersionsToString(reasonedExpired)}\n`);
 
     console.info(`Retained tagged top: ${this.actionInput.retainedTaggedTop}.`);
-    console.info(`Retain untagged: ${this.actionInput.retainUntagged}.`);
+    console.info(
+      `Retain untagged: ${this.actionInput.retainUntagged}, drift: ${this.actionOptions.retainUntaggedDriftSeconds} seconds.`,
+    );
     const reasonedRetained = await this.packageVersionService.getRetainedPackageVersions(
       all,
       filtered,
       this.actionInput.retainedTaggedTop,
       this.actionInput.retainUntagged,
+      this.actionOptions.retainUntaggedDriftSeconds,
     );
     const retained = reasonedRetained.map((item) => item.version);
     console.info(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}\n`);
