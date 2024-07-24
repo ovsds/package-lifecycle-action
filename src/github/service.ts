@@ -113,7 +113,7 @@ export class GithubPackageVersionService implements GithubPackageVersionServiceI
       if (version.createdAt < expirationDate) {
         result.push({
           version,
-          reason: `Expired: created at ${version.createdAt.toDateString()}, expiration date ${expirationDate.toDateString()}`,
+          reason: `Expired: created at ${version.createdAt.toDateString()}`,
         });
       }
     }

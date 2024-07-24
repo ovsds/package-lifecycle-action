@@ -58,8 +58,7 @@ export class Action {
     console.info(`Target owner: ${this.actionInput.owner}.`);
     const owner = await this.githubClient.getUser(this.actionInput.owner);
     console.info(`User type: ${owner.type}.`);
-    console.info(`Target package: ${this.actionInput.packageName}. Package type: ${this.actionInput.packageType}.`);
-    console.info("");
+    console.info(`Target package: ${this.actionInput.packageName}. Package type: ${this.actionInput.packageType}.\n`);
 
     const all = await this.packageVersionService.getAllPackageVersions(
       this.githubClient,
@@ -67,8 +66,7 @@ export class Action {
       this.actionInput.packageName,
       this.actionInput.packageType,
     );
-    console.info(`All package versions:\n${packageVersionsToString(all)}`);
-    console.info("");
+    console.info(`All package versions:\n${packageVersionsToString(all)}\n`);
 
     console.info(`Tag regex: ${this.actionInput.tagRegex}. Untagged: ${this.actionInput.untagged}.`);
     const reasonedFiltered = await this.packageVersionService.filterPackageVersions(
@@ -77,8 +75,7 @@ export class Action {
       this.actionInput.untagged,
     );
     const filtered = reasonedFiltered.map((item) => item.version);
-    console.info(`Filtered package versions:\n${reasonedPackageVersionsToString(reasonedFiltered)}`);
-    console.info("");
+    console.info(`Filtered package versions:\n${reasonedPackageVersionsToString(reasonedFiltered)}\n`);
 
     console.info(`Expire period days: ${this.actionInput.expirePeriodDays}.`);
     const reasonedExpired = await this.packageVersionService.getExpiredPackageVersions(
@@ -86,8 +83,7 @@ export class Action {
       this.actionInput.expirePeriodDays,
     );
     const expired = reasonedExpired.map((item) => item.version);
-    console.info(`Expired package versions:\n${reasonedPackageVersionsToString(reasonedExpired)}`);
-    console.info("");
+    console.info(`Expired package versions:\n${reasonedPackageVersionsToString(reasonedExpired)}\n`);
 
     console.info(`Retained tagged top: ${this.actionInput.retainedTaggedTop}.`);
     console.info(`Retain untagged: ${this.actionInput.retainUntagged}.`);
@@ -98,12 +94,10 @@ export class Action {
       this.actionInput.retainUntagged,
     );
     const retained = reasonedRetained.map((item) => item.version);
-    console.info(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}`);
-    console.info("");
+    console.info(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}\n`);
 
     const unwanted = await this.packageVersionService.getUnwantedPackageVersions(expired, retained);
-    console.info(`Unwanted package versions:\n${packageVersionsToString(unwanted)}`);
-    console.info("");
+    console.info(`Unwanted package versions:\n${packageVersionsToString(unwanted)}\n`);
 
     console.info(`Dry run: ${this.actionInput.dryRun}.`);
     let deleted: githubModels.PackageVersion[] = [];

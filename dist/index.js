@@ -68,30 +68,24 @@ class Action {
             console.info(`Target owner: ${this.actionInput.owner}.`);
             const owner = yield this.githubClient.getUser(this.actionInput.owner);
             console.info(`User type: ${owner.type}.`);
-            console.info(`Target package: ${this.actionInput.packageName}. Package type: ${this.actionInput.packageType}.`);
-            console.info("");
+            console.info(`Target package: ${this.actionInput.packageName}. Package type: ${this.actionInput.packageType}.\n`);
             const all = yield this.packageVersionService.getAllPackageVersions(this.githubClient, owner, this.actionInput.packageName, this.actionInput.packageType);
-            console.info(`All package versions:\n${packageVersionsToString(all)}`);
-            console.info("");
+            console.info(`All package versions:\n${packageVersionsToString(all)}\n`);
             console.info(`Tag regex: ${this.actionInput.tagRegex}. Untagged: ${this.actionInput.untagged}.`);
             const reasonedFiltered = yield this.packageVersionService.filterPackageVersions(all, this.actionInput.tagRegex, this.actionInput.untagged);
             const filtered = reasonedFiltered.map((item) => item.version);
-            console.info(`Filtered package versions:\n${reasonedPackageVersionsToString(reasonedFiltered)}`);
-            console.info("");
+            console.info(`Filtered package versions:\n${reasonedPackageVersionsToString(reasonedFiltered)}\n`);
             console.info(`Expire period days: ${this.actionInput.expirePeriodDays}.`);
             const reasonedExpired = yield this.packageVersionService.getExpiredPackageVersions(filtered, this.actionInput.expirePeriodDays);
             const expired = reasonedExpired.map((item) => item.version);
-            console.info(`Expired package versions:\n${reasonedPackageVersionsToString(reasonedExpired)}`);
-            console.info("");
+            console.info(`Expired package versions:\n${reasonedPackageVersionsToString(reasonedExpired)}\n`);
             console.info(`Retained tagged top: ${this.actionInput.retainedTaggedTop}.`);
             console.info(`Retain untagged: ${this.actionInput.retainUntagged}.`);
             const reasonedRetained = yield this.packageVersionService.getRetainedPackageVersions(all, filtered, this.actionInput.retainedTaggedTop, this.actionInput.retainUntagged);
             const retained = reasonedRetained.map((item) => item.version);
-            console.info(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}`);
-            console.info("");
+            console.info(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}\n`);
             const unwanted = yield this.packageVersionService.getUnwantedPackageVersions(expired, retained);
-            console.info(`Unwanted package versions:\n${packageVersionsToString(unwanted)}`);
-            console.info("");
+            console.info(`Unwanted package versions:\n${packageVersionsToString(unwanted)}\n`);
             console.info(`Dry run: ${this.actionInput.dryRun}.`);
             let deleted = [];
             if (!this.actionInput.dryRun) {
@@ -392,7 +386,7 @@ class GithubPackageVersionService {
                 if (version.createdAt < expirationDate) {
                     result.push({
                         version,
-                        reason: `Expired: created at ${version.createdAt.toDateString()}, expiration date ${expirationDate.toDateString()}`,
+                        reason: `Expired: created at ${version.createdAt.toDateString()}`,
                     });
                 }
             }
