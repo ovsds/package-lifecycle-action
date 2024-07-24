@@ -85,7 +85,7 @@ class Action {
             console.info("");
             console.info(`Retained tagged top: ${this.actionInput.retainedTaggedTop}.`);
             console.info(`Retain untagged: ${this.actionInput.retainUntagged}.`);
-            const reasonedRetained = yield this.packageVersionService.getRetainedPackageVersions(filtered, this.actionInput.retainedTaggedTop, this.actionInput.retainUntagged);
+            const reasonedRetained = yield this.packageVersionService.getRetainedPackageVersions(all, filtered, this.actionInput.retainedTaggedTop, this.actionInput.retainUntagged);
             const retained = reasonedRetained.map((item) => item.version);
             console.info(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}`);
             console.info("");
@@ -399,17 +399,20 @@ class GithubPackageVersionService {
             return result;
         });
     }
-    getRetainedPackageVersions(packageVersions, retainedTaggedTop, retainUntagged) {
+    getRetainedPackageVersions(allPackageVersions, filteredPackageVersions, retainedTaggedTop, retainUntagged) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (packageVersions.length === 0) {
+            if (filteredPackageVersions.length === 0) {
                 return [];
             }
             if (retainedTaggedTop === 0) {
+                if (allPackageVersions.length === filteredPackageVersions.length) {
+                    return [{ version: filteredPackageVersions[0], reason: "Retained newest, impossible to delete all versions" }];
+                }
                 return [];
             }
             const result = [];
             let retainedCount = 0;
-            for (const version of packageVersions) {
+            for (const version of filteredPackageVersions) {
                 if (version.tags.length > 0) {
                     result.push({ version, reason: "Retained tagged" });
                     retainedCount++;
