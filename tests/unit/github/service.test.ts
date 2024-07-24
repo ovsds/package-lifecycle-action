@@ -220,8 +220,8 @@ describe("getExpiredPackageVersions", () => {
 
     const result = await service.getExpiredPackageVersions(packageVersions, 1);
     expect(result).toEqual([
-      { version: packageVersions[1], reason: "Expired: created at Sun Jan 02 2022, expiration date Mon Jan 03 2022" },
-      { version: packageVersions[2], reason: "Expired: created at Sat Jan 01 2022, expiration date Mon Jan 03 2022" },
+      { version: packageVersions[1], reason: "Expired: created at Sun Jan 02 2022" },
+      { version: packageVersions[2], reason: "Expired: created at Sat Jan 01 2022" },
     ]);
   });
 });
