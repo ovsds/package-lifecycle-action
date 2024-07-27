@@ -55,46 +55,43 @@ function reasonedPackageVersionsToString(versions) {
     return versions.map(reasonedPackageVersionToString).join("\n");
 }
 class Action {
-    static fromInput(actionInput) {
-        return new Action(actionInput, githubClients.GithubClient.fromGithubToken(actionInput.githubToken), new githubServices.GithubPackageVersionService());
+    static fromOptions(actionOptions) {
+        return new Action(actionOptions, githubClients.GithubClient.fromGithubToken(actionOptions.githubToken), new githubServices.GithubPackageVersionService());
     }
-    constructor(actionInput, githubClient, packageVersionService) {
-        this.actionInput = actionInput;
+    constructor(actionOptions, githubClient, packageVersionService) {
+        this.options = actionOptions;
         this.githubClient = githubClient;
         this.packageVersionService = packageVersionService;
-        this.actionOptions = {
-            retainUntaggedDriftSeconds: 10 * 60, // 10 minutes
-        };
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.info(`Target owner: ${this.actionInput.owner}.`);
-            const owner = yield this.githubClient.getUser(this.actionInput.owner);
-            console.info(`User type: ${owner.type}.`);
-            console.info(`Target package: ${this.actionInput.packageName}. Package type: ${this.actionInput.packageType}.\n`);
-            const all = yield this.packageVersionService.getAllPackageVersions(this.githubClient, owner, this.actionInput.packageName, this.actionInput.packageType);
-            console.info(`All package versions:\n${packageVersionsToString(all)}\n`);
-            console.info(`Tag regex: ${this.actionInput.tagRegex}. Untagged: ${this.actionInput.untagged}.`);
-            const reasonedFiltered = yield this.packageVersionService.filterPackageVersions(all, this.actionInput.tagRegex, this.actionInput.untagged);
+            this.options.logger(`Target owner: ${this.options.owner}.`);
+            const owner = yield this.githubClient.getUser(this.options.owner);
+            this.options.logger(`User type: ${owner.type}.`);
+            this.options.logger(`Target package: ${this.options.packageName}. Package type: ${this.options.packageType}.\n`);
+            const all = yield this.packageVersionService.getAllPackageVersions(this.githubClient, owner, this.options.packageName, this.options.packageType);
+            this.options.logger(`All package versions:\n${packageVersionsToString(all)}\n`);
+            this.options.logger(`Tag regex: ${this.options.tagRegex}. Untagged: ${this.options.untagged}.`);
+            const reasonedFiltered = yield this.packageVersionService.filterPackageVersions(all, this.options.tagRegex, this.options.untagged);
             const filtered = reasonedFiltered.map((item) => item.version);
-            console.info(`Filtered package versions:\n${reasonedPackageVersionsToString(reasonedFiltered)}\n`);
-            console.info(`Expire period days: ${this.actionInput.expirePeriodDays}.`);
-            const reasonedExpired = yield this.packageVersionService.getExpiredPackageVersions(filtered, this.actionInput.expirePeriodDays);
+            this.options.logger(`Filtered package versions:\n${reasonedPackageVersionsToString(reasonedFiltered)}\n`);
+            this.options.logger(`Expire period days: ${this.options.expirePeriodDays}.`);
+            const reasonedExpired = yield this.packageVersionService.getExpiredPackageVersions(filtered, this.options.expirePeriodDays);
             const expired = reasonedExpired.map((item) => item.version);
-            console.info(`Expired package versions:\n${reasonedPackageVersionsToString(reasonedExpired)}\n`);
-            console.info(`Retained tagged top: ${this.actionInput.retainedTaggedTop}.`);
-            console.info(`Retain untagged: ${this.actionInput.retainUntagged}, drift: ${this.actionOptions.retainUntaggedDriftSeconds} seconds.`);
-            const reasonedRetained = yield this.packageVersionService.getRetainedPackageVersions(all, filtered, this.actionInput.retainedTaggedTop, this.actionInput.retainUntagged, this.actionOptions.retainUntaggedDriftSeconds);
+            this.options.logger(`Expired package versions:\n${reasonedPackageVersionsToString(reasonedExpired)}\n`);
+            this.options.logger(`Retained tagged top: ${this.options.retainedTaggedTop}.`);
+            this.options.logger(`Retain untagged: ${this.options.retainUntagged}, drift: ${this.options.retainUntaggedDriftSeconds} seconds.`);
+            const reasonedRetained = yield this.packageVersionService.getRetainedPackageVersions(all, filtered, this.options.retainedTaggedTop, this.options.retainUntagged, this.options.retainUntaggedDriftSeconds);
             const retained = reasonedRetained.map((item) => item.version);
-            console.info(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}\n`);
+            this.options.logger(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}\n`);
             const unwanted = yield this.packageVersionService.getUnwantedPackageVersions(expired, retained);
-            console.info(`Unwanted package versions:\n${packageVersionsToString(unwanted)}\n`);
-            console.info(`Dry run: ${this.actionInput.dryRun}.`);
+            this.options.logger(`Unwanted package versions:\n${packageVersionsToString(unwanted)}\n`);
+            this.options.logger(`Dry run: ${this.options.dryRun}.`);
             let deleted = [];
-            if (!this.actionInput.dryRun) {
-                deleted = yield this.packageVersionService.deletePackageVersions(this.githubClient, owner, this.actionInput.packageName, this.actionInput.packageType, unwanted);
+            if (!this.options.dryRun) {
+                deleted = yield this.packageVersionService.deletePackageVersions(this.githubClient, owner, this.options.packageName, this.options.packageType, unwanted);
             }
-            console.info(`Deleted package versions:\n${packageVersionsToString(deleted)}`);
+            this.options.logger(`Deleted package versions:\n${packageVersionsToString(deleted)}`);
             return {
                 owner,
                 packageVersions: {
@@ -537,7 +534,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const actionsCore = __importStar(__nccwpck_require__(2186));
 const action = __importStar(__nccwpck_require__(9139));
 const input = __importStar(__nccwpck_require__(8657));
-function getActionInput() {
+function getInput() {
     return input.parseInput({
         owner: actionsCore.getInput("owner"),
         packageName: actionsCore.getInput("package-name"),
@@ -553,8 +550,8 @@ function getActionInput() {
 }
 function _main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const actionInput = getActionInput();
-        const actionInstance = action.Action.fromInput(actionInput);
+        const actionInput = getInput();
+        const actionInstance = action.Action.fromOptions(Object.assign(Object.assign({}, actionInput), { retainUntaggedDriftSeconds: 10 * 60, logger: actionsCore.info }));
         yield actionInstance.run();
     });
 }
