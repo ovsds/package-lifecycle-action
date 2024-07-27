@@ -6,29 +6,6 @@
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -40,8 +17,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Action = void 0;
-const githubClients = __importStar(__nccwpck_require__(3532));
-const githubServices = __importStar(__nccwpck_require__(9255));
+const clients_1 = __nccwpck_require__(3532);
+const service_1 = __nccwpck_require__(9255);
 function packageVersionToString(version) {
     return `${version.name}(${version.tags.join(", ")})`;
 }
@@ -56,7 +33,7 @@ function reasonedPackageVersionsToString(versions) {
 }
 class Action {
     static fromOptions(actionOptions) {
-        return new Action(actionOptions, githubClients.GithubClient.fromGithubToken(actionOptions.githubToken), new githubServices.GithubPackageVersionService());
+        return new Action(actionOptions, clients_1.GithubClient.fromGithubToken(actionOptions.githubToken), new service_1.GithubPackageVersionService());
     }
     constructor(actionOptions, githubClient, packageVersionService) {
         this.options = actionOptions;
@@ -116,29 +93,6 @@ exports.Action = Action;
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -151,12 +105,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GithubClient = exports.defaultPerPage = void 0;
 const rest_1 = __nccwpck_require__(7620);
-const githubModels = __importStar(__nccwpck_require__(1608));
+const models_1 = __nccwpck_require__(1608);
 exports.defaultPerPage = 100;
 function parseUser(raw) {
     return {
         login: raw.login,
-        type: githubModels.parseUserType(raw.type),
+        type: (0, models_1.parseUserType)(raw.type),
     };
 }
 function parsePackageVersion(raw) {
@@ -301,29 +255,6 @@ exports.PackageVersionState = ["active", "deleted"];
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -335,13 +266,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GithubPackageVersionService = void 0;
-const githubClients = __importStar(__nccwpck_require__(3532));
+const clients_1 = __nccwpck_require__(3532);
 class GithubPackageVersionService {
     getAllPackageVersions(client, owner, packageName, packageType) {
         return __awaiter(this, void 0, void 0, function* () {
             let result = [];
             let currentPage = 1;
-            const perPage = githubClients.defaultPerPage;
+            const perPage = clients_1.defaultPerPage;
             while (true) {
                 const versionsPage = yield client.getPackageVersions(owner, packageName, packageType, currentPage, perPage);
                 result = result.concat(versionsPage);
@@ -444,49 +375,26 @@ exports.GithubPackageVersionService = GithubPackageVersionService;
 /***/ }),
 
 /***/ 8657:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parseInput = parseInput;
-const githubModels = __importStar(__nccwpck_require__(1608));
-const parseUtils = __importStar(__nccwpck_require__(6544));
-function parseInput(raw) {
+exports.parseActionInput = parseActionInput;
+const models_1 = __nccwpck_require__(1608);
+const parse_1 = __nccwpck_require__(6544);
+function parseActionInput(raw) {
     return {
-        owner: parseUtils.parseNonEmptyString(raw.owner),
-        packageName: parseUtils.parseNonEmptyString(raw.packageName),
-        packageType: githubModels.parsePackageType(raw.packageType),
-        tagRegex: new RegExp(parseUtils.parseNonEmptyString(raw.tagRegex)),
-        untagged: parseUtils.parseBoolean(raw.untagged),
-        expirePeriodDays: parseUtils.parseNonNegativeNumber(raw.expirePeriodDays),
-        retainedTaggedTop: parseUtils.parseNonNegativeNumber(raw.retainedTaggedTop),
-        retainUntagged: parseUtils.parseBoolean(raw.retainUntagged),
-        dryRun: parseUtils.parseBoolean(raw.dryRun),
-        githubToken: parseUtils.parseNonEmptyString(raw.githubToken),
+        owner: (0, parse_1.parseNonEmptyString)(raw.owner),
+        packageName: (0, parse_1.parseNonEmptyString)(raw.packageName),
+        packageType: (0, models_1.parsePackageType)(raw.packageType),
+        tagRegex: new RegExp((0, parse_1.parseNonEmptyString)(raw.tagRegex)),
+        untagged: (0, parse_1.parseBoolean)(raw.untagged),
+        expirePeriodDays: (0, parse_1.parseNonNegativeNumber)(raw.expirePeriodDays),
+        retainedTaggedTop: (0, parse_1.parseNonNegativeNumber)(raw.retainedTaggedTop),
+        retainUntagged: (0, parse_1.parseBoolean)(raw.retainUntagged),
+        dryRun: (0, parse_1.parseBoolean)(raw.dryRun),
+        githubToken: (0, parse_1.parseNonEmptyString)(raw.githubToken),
     };
 }
 
@@ -498,29 +406,6 @@ function parseInput(raw) {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -531,27 +416,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const actionsCore = __importStar(__nccwpck_require__(2186));
-const action = __importStar(__nccwpck_require__(9139));
-const input = __importStar(__nccwpck_require__(8657));
-function getInput() {
-    return input.parseInput({
-        owner: actionsCore.getInput("owner"),
-        packageName: actionsCore.getInput("package-name"),
-        packageType: actionsCore.getInput("package-type"),
-        tagRegex: actionsCore.getInput("tag-regex"),
-        untagged: actionsCore.getInput("untagged"),
-        expirePeriodDays: actionsCore.getInput("expire-period-days"),
-        retainedTaggedTop: actionsCore.getInput("retained-tagged-top"),
-        retainUntagged: actionsCore.getInput("retain-untagged"),
-        dryRun: actionsCore.getInput("dry-run"),
-        githubToken: actionsCore.getInput("github-token"),
+const core_1 = __nccwpck_require__(2186);
+const action_1 = __nccwpck_require__(9139);
+const input_1 = __nccwpck_require__(8657);
+function getActionInput() {
+    return (0, input_1.parseActionInput)({
+        owner: (0, core_1.getInput)("owner"),
+        packageName: (0, core_1.getInput)("package-name"),
+        packageType: (0, core_1.getInput)("package-type"),
+        tagRegex: (0, core_1.getInput)("tag-regex"),
+        untagged: (0, core_1.getInput)("untagged"),
+        expirePeriodDays: (0, core_1.getInput)("expire-period-days"),
+        retainedTaggedTop: (0, core_1.getInput)("retained-tagged-top"),
+        retainUntagged: (0, core_1.getInput)("retain-untagged"),
+        dryRun: (0, core_1.getInput)("dry-run"),
+        githubToken: (0, core_1.getInput)("github-token"),
     });
 }
 function _main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const actionInput = getInput();
-        const actionInstance = action.Action.fromOptions(Object.assign(Object.assign({}, actionInput), { retainUntaggedDriftSeconds: 10 * 60, logger: actionsCore.info }));
+        const actionInput = getActionInput();
+        const actionInstance = action_1.Action.fromOptions(Object.assign(Object.assign({}, actionInput), { retainUntaggedDriftSeconds: 10 * 60, logger: core_1.info }));
         yield actionInstance.run();
     });
 }
@@ -562,10 +447,10 @@ function main() {
         }
         catch (error) {
             if (error instanceof Error) {
-                actionsCore.setFailed(error.message);
+                (0, core_1.setFailed)(error.message);
             }
             else {
-                actionsCore.setFailed("An unexpected error occurred");
+                (0, core_1.setFailed)("An unexpected error occurred");
             }
         }
     });

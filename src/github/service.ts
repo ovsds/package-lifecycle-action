@@ -1,58 +1,55 @@
-import * as githubClients from "./clients";
-import * as githubModels from "./models";
+import { GithubClientInterface, defaultPerPage } from "./clients";
+import { PackageTypeLiteral, PackageVersion, ReasonedPackageVersion, User } from "./models";
 
 export interface GithubPackageVersionServiceInterface {
   getAllPackageVersions(
-    client: githubClients.GithubClientInterface,
-    owner: githubModels.User,
+    client: GithubClientInterface,
+    owner: User,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
-  ): Promise<githubModels.PackageVersion[]>;
+    packageType: PackageTypeLiteral,
+  ): Promise<PackageVersion[]>;
 
   deletePackageVersions(
-    client: githubClients.GithubClientInterface,
-    owner: githubModels.User,
+    client: GithubClientInterface,
+    owner: User,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
-    packageVersions: githubModels.PackageVersion[],
-  ): Promise<githubModels.PackageVersion[]>;
+    packageType: PackageTypeLiteral,
+    packageVersions: PackageVersion[],
+  ): Promise<PackageVersion[]>;
 
   filterPackageVersions(
-    packageVersions: githubModels.PackageVersion[],
+    packageVersions: PackageVersion[],
     tagRegex: RegExp,
     untagged: boolean,
-  ): Promise<githubModels.ReasonedPackageVersion[]>;
+  ): Promise<ReasonedPackageVersion[]>;
 
   getExpiredPackageVersions(
-    packageVersions: githubModels.PackageVersion[],
+    packageVersions: PackageVersion[],
     expirePeriodDays: number,
-  ): Promise<githubModels.ReasonedPackageVersion[]>;
+  ): Promise<ReasonedPackageVersion[]>;
 
   getRetainedPackageVersions(
-    allPackageVersions: githubModels.PackageVersion[],
-    filteredPackageVersions: githubModels.PackageVersion[],
+    allPackageVersions: PackageVersion[],
+    filteredPackageVersions: PackageVersion[],
     retainedTaggedTop: number,
     retainUntagged: boolean,
     retainUntaggedDriftSeconds: number,
-  ): Promise<githubModels.ReasonedPackageVersion[]>;
+  ): Promise<ReasonedPackageVersion[]>;
 
-  getUnwantedPackageVersions(
-    expired: githubModels.PackageVersion[],
-    retained: githubModels.PackageVersion[],
-  ): Promise<githubModels.PackageVersion[]>;
+  getUnwantedPackageVersions(expired: PackageVersion[], retained: PackageVersion[]): Promise<PackageVersion[]>;
 }
 
 export class GithubPackageVersionService implements GithubPackageVersionServiceInterface {
   async getAllPackageVersions(
-    client: githubClients.GithubClientInterface,
-    owner: githubModels.User,
+    client: GithubClientInterface,
+    owner: User,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
-  ): Promise<githubModels.PackageVersion[]> {
-    let result: githubModels.PackageVersion[] = [];
+    packageType: PackageTypeLiteral,
+  ): Promise<PackageVersion[]> {
+    let result: PackageVersion[] = [];
 
     let currentPage = 1;
-    const perPage = githubClients.defaultPerPage;
+    const perPage = defaultPerPage;
 
     while (true) {
       const versionsPage = await client.getPackageVersions(owner, packageName, packageType, currentPage, perPage);
@@ -71,12 +68,12 @@ export class GithubPackageVersionService implements GithubPackageVersionServiceI
   }
 
   async deletePackageVersions(
-    client: githubClients.GithubClientInterface,
-    owner: githubModels.User,
+    client: GithubClientInterface,
+    owner: User,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
-    packageVersions: githubModels.PackageVersion[],
-  ): Promise<githubModels.PackageVersion[]> {
+    packageType: PackageTypeLiteral,
+    packageVersions: PackageVersion[],
+  ): Promise<PackageVersion[]> {
     for (const version of packageVersions) {
       await client.deletePackageVersion(owner, packageName, packageType, version.id);
     }
@@ -85,11 +82,11 @@ export class GithubPackageVersionService implements GithubPackageVersionServiceI
   }
 
   async filterPackageVersions(
-    packageVersions: githubModels.PackageVersion[],
+    packageVersions: PackageVersion[],
     tagRegex: RegExp,
     untagged: boolean,
-  ): Promise<githubModels.ReasonedPackageVersion[]> {
-    const result: githubModels.ReasonedPackageVersion[] = [];
+  ): Promise<ReasonedPackageVersion[]> {
+    const result: ReasonedPackageVersion[] = [];
 
     for (const version of packageVersions) {
       if (version.tags.some((tag) => tagRegex.test(tag))) {
@@ -103,10 +100,10 @@ export class GithubPackageVersionService implements GithubPackageVersionServiceI
   }
 
   async getExpiredPackageVersions(
-    packageVersions: githubModels.PackageVersion[],
+    packageVersions: PackageVersion[],
     expirePeriodDays: number,
-  ): Promise<githubModels.ReasonedPackageVersion[]> {
-    const result: githubModels.ReasonedPackageVersion[] = [];
+  ): Promise<ReasonedPackageVersion[]> {
+    const result: ReasonedPackageVersion[] = [];
     const expirationDate = new Date(Date.now() - expirePeriodDays * 24 * 60 * 60 * 1000);
     expirationDate.setHours(0, 0, 0, 0);
 
@@ -123,12 +120,12 @@ export class GithubPackageVersionService implements GithubPackageVersionServiceI
   }
 
   async getRetainedPackageVersions(
-    allPackageVersions: githubModels.PackageVersion[],
-    filteredPackageVersions: githubModels.PackageVersion[],
+    allPackageVersions: PackageVersion[],
+    filteredPackageVersions: PackageVersion[],
     retainedTaggedTop: number,
     retainUntagged: boolean,
     retainUntaggedDriftSeconds: number,
-  ): Promise<githubModels.ReasonedPackageVersion[]> {
+  ): Promise<ReasonedPackageVersion[]> {
     if (filteredPackageVersions.length === 0) {
       return [];
     }
@@ -139,7 +136,7 @@ export class GithubPackageVersionService implements GithubPackageVersionServiceI
       return [];
     }
 
-    const result: githubModels.ReasonedPackageVersion[] = [];
+    const result: ReasonedPackageVersion[] = [];
     let retainedCount = 0;
     let lastRetainedCreatedAt = filteredPackageVersions[0].createdAt;
 
@@ -165,10 +162,7 @@ export class GithubPackageVersionService implements GithubPackageVersionServiceI
     return result;
   }
 
-  async getUnwantedPackageVersions(
-    expired: githubModels.PackageVersion[],
-    retained: githubModels.PackageVersion[],
-  ): Promise<githubModels.PackageVersion[]> {
+  async getUnwantedPackageVersions(expired: PackageVersion[], retained: PackageVersion[]): Promise<PackageVersion[]> {
     const retainedIds = new Set(retained.map((version) => version.id));
     return expired.filter((version) => !retainedIds.has(version.id));
   }

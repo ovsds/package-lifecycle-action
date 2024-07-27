@@ -1,39 +1,39 @@
-import * as githubClients from "./github/clients";
-import * as githubModels from "./github/models";
-import * as githubServices from "./github/service";
+import { GithubClient, GithubClientInterface } from "./github/clients";
+import { PackageTypeLiteral, PackageVersion, ReasonedPackageVersion, User } from "./github/models";
+import { GithubPackageVersionService, GithubPackageVersionServiceInterface } from "./github/service";
 
-function packageVersionToString(version: githubModels.PackageVersion): string {
+function packageVersionToString(version: PackageVersion): string {
   return `${version.name}(${version.tags.join(", ")})`;
 }
 
-function reasonedPackageVersionToString(reasonedPackageVersion: githubModels.ReasonedPackageVersion): string {
+function reasonedPackageVersionToString(reasonedPackageVersion: ReasonedPackageVersion): string {
   return `${packageVersionToString(reasonedPackageVersion.version)} - ${reasonedPackageVersion.reason}`;
 }
 
-function packageVersionsToString(versions: githubModels.PackageVersion[]): string {
+function packageVersionsToString(versions: PackageVersion[]): string {
   return versions.map(packageVersionToString).join("\n");
 }
 
-function reasonedPackageVersionsToString(versions: githubModels.ReasonedPackageVersion[]): string {
+function reasonedPackageVersionsToString(versions: ReasonedPackageVersion[]): string {
   return versions.map(reasonedPackageVersionToString).join("\n");
 }
 
 interface ActionResult {
-  owner: githubModels.User;
+  owner: User;
   packageVersions: {
-    all: githubModels.PackageVersion[];
-    reasonedFiltered: githubModels.ReasonedPackageVersion[];
-    reasonedExpired: githubModels.ReasonedPackageVersion[];
-    reasonedRetained: githubModels.ReasonedPackageVersion[];
-    unwanted: githubModels.PackageVersion[];
-    deleted: githubModels.PackageVersion[];
+    all: PackageVersion[];
+    reasonedFiltered: ReasonedPackageVersion[];
+    reasonedExpired: ReasonedPackageVersion[];
+    reasonedRetained: ReasonedPackageVersion[];
+    unwanted: PackageVersion[];
+    deleted: PackageVersion[];
   };
 }
 
 interface ActionOptions {
   owner: string;
   packageName: string;
-  packageType: githubModels.PackageTypeLiteral;
+  packageType: PackageTypeLiteral;
   tagRegex: RegExp;
   untagged: boolean;
   expirePeriodDays: number;
@@ -49,19 +49,19 @@ export class Action {
   static fromOptions(actionOptions: ActionOptions): Action {
     return new Action(
       actionOptions,
-      githubClients.GithubClient.fromGithubToken(actionOptions.githubToken),
-      new githubServices.GithubPackageVersionService(),
+      GithubClient.fromGithubToken(actionOptions.githubToken),
+      new GithubPackageVersionService(),
     );
   }
 
   private readonly options: ActionOptions;
-  private readonly githubClient: githubClients.GithubClientInterface;
-  private readonly packageVersionService: githubServices.GithubPackageVersionServiceInterface;
+  private readonly githubClient: GithubClientInterface;
+  private readonly packageVersionService: GithubPackageVersionServiceInterface;
 
   constructor(
     actionOptions: ActionOptions,
-    githubClient: githubClients.GithubClientInterface,
-    packageVersionService: githubServices.GithubPackageVersionServiceInterface,
+    githubClient: GithubClientInterface,
+    packageVersionService: GithubPackageVersionServiceInterface,
   ) {
     this.options = actionOptions;
     this.githubClient = githubClient;
@@ -117,7 +117,7 @@ export class Action {
     this.options.logger(`Unwanted package versions:\n${packageVersionsToString(unwanted)}\n`);
 
     this.options.logger(`Dry run: ${this.options.dryRun}.`);
-    let deleted: githubModels.PackageVersion[] = [];
+    let deleted: PackageVersion[] = [];
     if (!this.options.dryRun) {
       deleted = await this.packageVersionService.deletePackageVersions(
         this.githubClient,
