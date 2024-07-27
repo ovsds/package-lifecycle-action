@@ -1,7 +1,6 @@
 import * as githubClients from "./github/clients";
 import * as githubModels from "./github/models";
 import * as githubServices from "./github/service";
-import * as input from "./input";
 
 function packageVersionToString(version: githubModels.PackageVersion): string {
   return `${version.name}(${version.tags.join(", ")})`;
@@ -32,97 +31,103 @@ interface ActionResult {
 }
 
 interface ActionOptions {
+  owner: string;
+  packageName: string;
+  packageType: githubModels.PackageTypeLiteral;
+  tagRegex: RegExp;
+  untagged: boolean;
+  expirePeriodDays: number;
+  retainedTaggedTop: number;
+  retainUntagged: boolean;
+  dryRun: boolean;
+  githubToken: string;
   retainUntaggedDriftSeconds: number;
+  logger: (message: string) => void;
 }
 
 export class Action {
-  static fromInput(actionInput: input.Input): Action {
+  static fromOptions(actionOptions: ActionOptions): Action {
     return new Action(
-      actionInput,
-      githubClients.GithubClient.fromGithubToken(actionInput.githubToken),
+      actionOptions,
+      githubClients.GithubClient.fromGithubToken(actionOptions.githubToken),
       new githubServices.GithubPackageVersionService(),
     );
   }
 
-  private readonly actionInput: input.Input;
-  private readonly actionOptions: ActionOptions;
+  private readonly options: ActionOptions;
   private readonly githubClient: githubClients.GithubClientInterface;
   private readonly packageVersionService: githubServices.GithubPackageVersionServiceInterface;
 
   constructor(
-    actionInput: input.Input,
+    actionOptions: ActionOptions,
     githubClient: githubClients.GithubClientInterface,
     packageVersionService: githubServices.GithubPackageVersionServiceInterface,
   ) {
-    this.actionInput = actionInput;
+    this.options = actionOptions;
     this.githubClient = githubClient;
     this.packageVersionService = packageVersionService;
-
-    this.actionOptions = {
-      retainUntaggedDriftSeconds: 10 * 60, // 10 minutes
-    };
   }
 
   async run(): Promise<ActionResult> {
-    console.info(`Target owner: ${this.actionInput.owner}.`);
-    const owner = await this.githubClient.getUser(this.actionInput.owner);
-    console.info(`User type: ${owner.type}.`);
-    console.info(`Target package: ${this.actionInput.packageName}. Package type: ${this.actionInput.packageType}.\n`);
+    this.options.logger(`Target owner: ${this.options.owner}.`);
+    const owner = await this.githubClient.getUser(this.options.owner);
+    this.options.logger(`User type: ${owner.type}.`);
+    this.options.logger(`Target package: ${this.options.packageName}. Package type: ${this.options.packageType}.\n`);
 
     const all = await this.packageVersionService.getAllPackageVersions(
       this.githubClient,
       owner,
-      this.actionInput.packageName,
-      this.actionInput.packageType,
+      this.options.packageName,
+      this.options.packageType,
     );
-    console.info(`All package versions:\n${packageVersionsToString(all)}\n`);
+    this.options.logger(`All package versions:\n${packageVersionsToString(all)}\n`);
 
-    console.info(`Tag regex: ${this.actionInput.tagRegex}. Untagged: ${this.actionInput.untagged}.`);
+    this.options.logger(`Tag regex: ${this.options.tagRegex}. Untagged: ${this.options.untagged}.`);
     const reasonedFiltered = await this.packageVersionService.filterPackageVersions(
       all,
-      this.actionInput.tagRegex,
-      this.actionInput.untagged,
+      this.options.tagRegex,
+      this.options.untagged,
     );
     const filtered = reasonedFiltered.map((item) => item.version);
-    console.info(`Filtered package versions:\n${reasonedPackageVersionsToString(reasonedFiltered)}\n`);
+    this.options.logger(`Filtered package versions:\n${reasonedPackageVersionsToString(reasonedFiltered)}\n`);
 
-    console.info(`Expire period days: ${this.actionInput.expirePeriodDays}.`);
+    this.options.logger(`Expire period days: ${this.options.expirePeriodDays}.`);
     const reasonedExpired = await this.packageVersionService.getExpiredPackageVersions(
       filtered,
-      this.actionInput.expirePeriodDays,
+      this.options.expirePeriodDays,
     );
     const expired = reasonedExpired.map((item) => item.version);
-    console.info(`Expired package versions:\n${reasonedPackageVersionsToString(reasonedExpired)}\n`);
+    this.options.logger(`Expired package versions:\n${reasonedPackageVersionsToString(reasonedExpired)}\n`);
 
-    console.info(`Retained tagged top: ${this.actionInput.retainedTaggedTop}.`);
-    console.info(
-      `Retain untagged: ${this.actionInput.retainUntagged}, drift: ${this.actionOptions.retainUntaggedDriftSeconds} seconds.`,
+    this.options.logger(`Retained tagged top: ${this.options.retainedTaggedTop}.`);
+    this.options.logger(
+      `Retain untagged: ${this.options.retainUntagged}, drift: ${this.options.retainUntaggedDriftSeconds} seconds.`,
     );
     const reasonedRetained = await this.packageVersionService.getRetainedPackageVersions(
       all,
       filtered,
-      this.actionInput.retainedTaggedTop,
-      this.actionInput.retainUntagged,
-      this.actionOptions.retainUntaggedDriftSeconds,
+      this.options.retainedTaggedTop,
+      this.options.retainUntagged,
+      this.options.retainUntaggedDriftSeconds,
     );
     const retained = reasonedRetained.map((item) => item.version);
-    console.info(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}\n`);
+    this.options.logger(`Retained package versions:\n${reasonedPackageVersionsToString(reasonedRetained)}\n`);
 
     const unwanted = await this.packageVersionService.getUnwantedPackageVersions(expired, retained);
-    console.info(`Unwanted package versions:\n${packageVersionsToString(unwanted)}\n`);
+    this.options.logger(`Unwanted package versions:\n${packageVersionsToString(unwanted)}\n`);
 
-    console.info(`Dry run: ${this.actionInput.dryRun}.`);
+    this.options.logger(`Dry run: ${this.options.dryRun}.`);
     let deleted: githubModels.PackageVersion[] = [];
-    if (!this.actionInput.dryRun) {
+    if (!this.options.dryRun) {
       deleted = await this.packageVersionService.deletePackageVersions(
         this.githubClient,
         owner,
-        this.actionInput.packageName,
-        this.actionInput.packageType,
+        this.options.packageName,
+        this.options.packageType,
         unwanted,
       );
     }
-    console.info(`Deleted package versions:\n${packageVersionsToString(deleted)}`);
+    this.options.logger(`Deleted package versions:\n${packageVersionsToString(deleted)}`);
 
     return {
       owner,

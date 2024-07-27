@@ -3,7 +3,7 @@ import * as actionsCore from "@actions/core";
 import * as action from "./action";
 import * as input from "./input";
 
-function getActionInput(): input.Input {
+function getInput(): input.Input {
   return input.parseInput({
     owner: actionsCore.getInput("owner"),
     packageName: actionsCore.getInput("package-name"),
@@ -19,8 +19,12 @@ function getActionInput(): input.Input {
 }
 
 async function _main(): Promise<void> {
-  const actionInput = getActionInput();
-  const actionInstance = action.Action.fromInput(actionInput);
+  const actionInput = getInput();
+  const actionInstance = action.Action.fromOptions({
+    ...actionInput,
+    retainUntaggedDriftSeconds: 10 * 60, // 10 minutes
+    logger: actionsCore.info,
+  });
   await actionInstance.run();
 }
 
