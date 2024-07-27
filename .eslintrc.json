@@ -5,11 +5,10 @@
   "parserOptions": {
     "ecmaVersion": 9,
     "sourceType": "module",
-    "project": "./tsconfig.json",
+    "project": "./tsconfig_eslint.json",
     "createDefaultProgram": true
   },
   "rules": {
-    "no-console": "off", // TODO: remove after adding logger to action settings
     "no-constant-condition": "off"
   },
   "env": {

@@ -1,7 +1,7 @@
-import * as githubModels from "./github/models";
-import * as parseUtils from "./utils/parse";
+import { PackageTypeLiteral, parsePackageType } from "./github/models";
+import { parseBoolean, parseNonEmptyString, parseNonNegativeNumber } from "./utils/parse";
 
-export interface RawInput {
+export interface RawActionInput {
   owner: string;
   packageName: string;
   packageType: string;
@@ -14,10 +14,10 @@ export interface RawInput {
   githubToken: string;
 }
 
-export interface Input {
+export interface ActionInput {
   owner: string;
   packageName: string;
-  packageType: githubModels.PackageTypeLiteral;
+  packageType: PackageTypeLiteral;
   tagRegex: RegExp;
   untagged: boolean;
   expirePeriodDays: number;
@@ -27,17 +27,17 @@ export interface Input {
   githubToken: string;
 }
 
-export function parseInput(raw: RawInput): Input {
+export function parseActionInput(raw: RawActionInput): ActionInput {
   return {
-    owner: parseUtils.parseNonEmptyString(raw.owner),
-    packageName: parseUtils.parseNonEmptyString(raw.packageName),
-    packageType: githubModels.parsePackageType(raw.packageType),
-    tagRegex: new RegExp(parseUtils.parseNonEmptyString(raw.tagRegex)),
-    untagged: parseUtils.parseBoolean(raw.untagged),
-    expirePeriodDays: parseUtils.parseNonNegativeNumber(raw.expirePeriodDays),
-    retainedTaggedTop: parseUtils.parseNonNegativeNumber(raw.retainedTaggedTop),
-    retainUntagged: parseUtils.parseBoolean(raw.retainUntagged),
-    dryRun: parseUtils.parseBoolean(raw.dryRun),
-    githubToken: parseUtils.parseNonEmptyString(raw.githubToken),
+    owner: parseNonEmptyString(raw.owner),
+    packageName: parseNonEmptyString(raw.packageName),
+    packageType: parsePackageType(raw.packageType),
+    tagRegex: new RegExp(parseNonEmptyString(raw.tagRegex)),
+    untagged: parseBoolean(raw.untagged),
+    expirePeriodDays: parseNonNegativeNumber(raw.expirePeriodDays),
+    retainedTaggedTop: parseNonNegativeNumber(raw.retainedTaggedTop),
+    retainUntagged: parseBoolean(raw.retainUntagged),
+    dryRun: parseBoolean(raw.dryRun),
+    githubToken: parseNonEmptyString(raw.githubToken),
   };
 }

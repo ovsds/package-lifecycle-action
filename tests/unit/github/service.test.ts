@@ -1,14 +1,15 @@
-import * as githubServices from "../../../src/github/service";
-import * as githubClients from "../../../src/github/clients";
-import * as githubModels from "../../../src/github/models";
-import { beforeEach, describe, expect, test, vitest, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vitest } from "vitest";
+
+import { GithubClientInterface, defaultPerPage } from "../../../src/github/clients";
+import { PackageTypeLiteral, PackageVersion, User, UserTypeLiteral } from "../../../src/github/models";
+import { GithubPackageVersionService } from "../../../src/github/service";
 
 const testPackageName = "test-package-name";
-const testPackageType = "container" as githubModels.PackageTypeLiteral;
+const testPackageType = "container" as PackageTypeLiteral;
 
 describe("getAllPackageVersions", () => {
-  let mockGithubClient: githubClients.GithubClientInterface;
-  let testOwner: githubModels.User;
+  let mockGithubClient: GithubClientInterface;
+  let testOwner: User;
 
   beforeEach(() => {
     mockGithubClient = {
@@ -16,12 +17,12 @@ describe("getAllPackageVersions", () => {
       getPackageVersions: vitest.fn(),
       deletePackageVersion: vitest.fn(),
     };
-    testOwner = { type: "User" as githubModels.UserTypeLiteral, login: "test-owner" };
+    testOwner = { type: "User" as UserTypeLiteral, login: "test-owner" };
   });
 
   test("with empty versions", async () => {
-    mockGithubClient.getPackageVersions.mockResolvedValue([] as githubModels.PackageVersion[]);
-    const service = new githubServices.GithubPackageVersionService();
+    mockGithubClient.getPackageVersions.mockResolvedValue([] as PackageVersion[]);
+    const service = new GithubPackageVersionService();
 
     const result = await service.getAllPackageVersions(mockGithubClient, testOwner, testPackageName, testPackageType);
 
@@ -37,13 +38,13 @@ describe("getAllPackageVersions", () => {
 
   test("with multiple pages", async () => {
     const now = Date.now();
-    const versions = Array.from({ length: githubClients.defaultPerPage * 2 - 1 }, (_, i: number) => ({
+    const versions = Array.from({ length: defaultPerPage * 2 - 1 }, (_, i: number) => ({
       createdAt: new Date(now - i),
     }));
 
-    const page1 = versions.slice(0, githubClients.defaultPerPage);
-    const page2 = versions.slice(githubClients.defaultPerPage);
-    const service = new githubServices.GithubPackageVersionService();
+    const page1 = versions.slice(0, defaultPerPage);
+    const page2 = versions.slice(defaultPerPage);
+    const service = new GithubPackageVersionService();
 
     mockGithubClient.getPackageVersions.mockResolvedValueOnce(page1);
     mockGithubClient.getPackageVersions.mockResolvedValueOnce(page2);
@@ -57,7 +58,7 @@ describe("getAllPackageVersions", () => {
       testPackageName,
       testPackageType,
       1,
-      githubClients.defaultPerPage,
+      defaultPerPage,
     );
     expect(mockGithubClient.getPackageVersions).toHaveBeenNthCalledWith(
       2,
@@ -65,7 +66,7 @@ describe("getAllPackageVersions", () => {
       testPackageName,
       testPackageType,
       2,
-      githubClients.defaultPerPage,
+      defaultPerPage,
     );
   });
 
@@ -75,7 +76,7 @@ describe("getAllPackageVersions", () => {
       { createdAt: new Date("2022-01-01") },
       { createdAt: new Date("2022-01-02") },
     ];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     mockGithubClient.getPackageVersions.mockResolvedValue(versions);
 
@@ -90,8 +91,8 @@ describe("getAllPackageVersions", () => {
 });
 
 describe("deletePackageVersions", () => {
-  let mockGithubClient: githubClients.GithubClientInterface;
-  let testOwner: githubModels.User;
+  let mockGithubClient: GithubClientInterface;
+  let testOwner: User;
 
   beforeEach(() => {
     mockGithubClient = {
@@ -99,12 +100,12 @@ describe("deletePackageVersions", () => {
       getPackageVersions: vitest.fn(),
       deletePackageVersion: vitest.fn(),
     };
-    testOwner = { type: "User" as githubModels.UserTypeLiteral, login: "test-owner" };
+    testOwner = { type: "User" as UserTypeLiteral, login: "test-owner" };
   });
 
   test("with empty packageVersions", async () => {
     const packageVersions = [];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.deletePackageVersions(
       mockGithubClient,
@@ -120,7 +121,7 @@ describe("deletePackageVersions", () => {
 
   test("with multiple packageVersions", async () => {
     const packageVersions = [{ id: 1 }, { id: 2 }, { id: 3 }];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.deletePackageVersions(
       mockGithubClient,
@@ -140,7 +141,7 @@ describe("deletePackageVersions", () => {
 
 describe("filterPackageVersions", () => {
   test("with empty packageVersions", async () => {
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.filterPackageVersions([], /./, false);
     expect(result).toEqual([]);
@@ -152,7 +153,7 @@ describe("filterPackageVersions", () => {
       { name: "v2", tags: [] },
       { name: "v1", tags: ["tag"] },
     ];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.filterPackageVersions(packageVersions, /^tag$/, false);
     expect(result).toEqual([{ version: packageVersions[2], reason: "Tag regex" }]);
@@ -164,7 +165,7 @@ describe("filterPackageVersions", () => {
       { name: "v2", tags: [] },
       { name: "v1", tags: ["tag1"] },
     ];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.filterPackageVersions(packageVersions, /./, true);
     expect(result).toEqual([
@@ -180,7 +181,7 @@ describe("filterPackageVersions", () => {
       { name: "v2", tags: [] },
       { name: "v1", tags: ["tag1"] },
     ];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.filterPackageVersions(packageVersions, /./, false);
     expect(result).toEqual([
@@ -202,7 +203,7 @@ describe("getExpiredPackageVersions", () => {
   });
 
   test("with empty packageVersions", async () => {
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.getExpiredPackageVersions([], 1);
     expect(result).toEqual([]);
@@ -216,7 +217,7 @@ describe("getExpiredPackageVersions", () => {
       { name: "v2", createdAt: new Date("2022-01-02") },
       { name: "v1", createdAt: new Date("2022-01-01") },
     ];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.getExpiredPackageVersions(packageVersions, 1);
     expect(result).toEqual([
@@ -228,7 +229,7 @@ describe("getExpiredPackageVersions", () => {
 
 describe("getRetainedPackageVersions", () => {
   test("with empty packageVersions", async () => {
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.getRetainedPackageVersions([], [], 1, true, 0);
     expect(result).toEqual([]);
@@ -241,7 +242,7 @@ describe("getRetainedPackageVersions", () => {
       { name: "v1", tags: ["tag1"], createdAt: new Date("2022-01-01") },
     ];
     const allPackageVersions = [...packageVersions, { name: "v4", tags: [], createdAt: new Date("2022-01-04") }];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.getRetainedPackageVersions(allPackageVersions, packageVersions, 0, true, 0);
     expect(result).toEqual([]);
@@ -254,7 +255,7 @@ describe("getRetainedPackageVersions", () => {
       { name: "v1", tags: ["tag1"], createdAt: new Date("2022-01-01") },
     ];
     const allPackageVersions = [...packageVersions];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.getRetainedPackageVersions(allPackageVersions, packageVersions, 0, true, 0);
     expect(result).toEqual([
@@ -268,7 +269,7 @@ describe("getRetainedPackageVersions", () => {
       { name: "v2", tags: [], createdAt: new Date("2022-01-02") },
       { name: "v1", tags: ["tag1"], createdAt: new Date("2022-01-01") },
     ];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.getRetainedPackageVersions([], packageVersions, 1, true, 0);
     expect(result).toEqual([{ version: packageVersions[0], reason: "Retained tagged" }]);
@@ -282,7 +283,7 @@ describe("getRetainedPackageVersions", () => {
       { name: "v2", tags: [], createdAt: new Date("2022-01-02") },
       { name: "v1", tags: ["tag1"], createdAt: new Date("2022-01-01") },
     ];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.getRetainedPackageVersions([], packageVersions, 1, true, 0);
     expect(result).toEqual([
@@ -301,7 +302,7 @@ describe("getRetainedPackageVersions", () => {
       { name: "v2", tags: [], createdAt: new Date("2022-01-02") },
       { name: "v1", tags: ["tag1"], createdAt: new Date("2022-01-01") },
     ];
-    const service = new githubServices.GithubPackageVersionService();
+    const service = new GithubPackageVersionService();
 
     const result = await service.getRetainedPackageVersions([], packageVersions, 1, true, 30);
     expect(result).toEqual([

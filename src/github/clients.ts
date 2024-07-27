@@ -1,6 +1,6 @@
 import { Octokit } from "@octokit/rest";
 
-import * as githubModels from "./models";
+import { PackageTypeLiteral, PackageVersion, PackageVersionStateLiteral, User, parseUserType } from "./models";
 
 export const defaultPerPage = 100;
 
@@ -9,10 +9,10 @@ interface GetUserResponse {
   type: string;
 }
 
-function parseUser(raw: GetUserResponse): githubModels.User {
+function parseUser(raw: GetUserResponse): User {
   return {
     login: raw.login,
-    type: githubModels.parseUserType(raw.type),
+    type: parseUserType(raw.type),
   };
 }
 
@@ -24,7 +24,7 @@ interface GetPackageVersionResponse {
   metadata?: { container?: { tags: string[] } };
 }
 
-function parsePackageVersion(raw: GetPackageVersionResponse): githubModels.PackageVersion {
+function parsePackageVersion(raw: GetPackageVersionResponse): PackageVersion {
   return {
     id: raw.id,
     name: raw.name,
@@ -35,19 +35,19 @@ function parsePackageVersion(raw: GetPackageVersionResponse): githubModels.Packa
 }
 
 export interface GithubClientInterface {
-  getUser(username: string): Promise<githubModels.User>;
+  getUser(username: string): Promise<User>;
   getPackageVersions(
-    owner: githubModels.User,
+    owner: User,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
+    packageType: PackageTypeLiteral,
     page?: number,
     perPage?: number,
-    state?: githubModels.PackageVersionStateLiteral,
-  ): Promise<githubModels.PackageVersion[]>;
+    state?: PackageVersionStateLiteral,
+  ): Promise<PackageVersion[]>;
   deletePackageVersion(
-    owner: githubModels.User,
+    owner: User,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
+    packageType: PackageTypeLiteral,
     packageVersionId: number,
   ): Promise<void>;
 }
@@ -69,20 +69,20 @@ export class GithubClient implements GithubClientInterface {
   }
 
   // https://docs.github.com/en/rest/packages/packages?apiVersion=2022-11-28#list-package-versions-for-a-package-owned-by-a-user
-  async getUser(username: string): Promise<githubModels.User> {
+  async getUser(username: string): Promise<User> {
     const response = await this.octokitClient.users.getByUsername({ username });
 
     return parseUser(response.data);
   }
 
   async getPackageVersions(
-    owner: githubModels.User,
+    owner: User,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
+    packageType: PackageTypeLiteral,
     page = 1,
     perPage = 100,
-    state: githubModels.PackageVersionStateLiteral = "active",
-  ): Promise<githubModels.PackageVersion[]> {
+    state: PackageVersionStateLiteral = "active",
+  ): Promise<PackageVersion[]> {
     if (owner.type === "User") {
       return this.getUserPackageVersions(owner.login, packageName, packageType, page, perPage, state);
     } else if (owner.type === "Organization") {
@@ -93,9 +93,9 @@ export class GithubClient implements GithubClientInterface {
   }
 
   async deletePackageVersion(
-    owner: githubModels.User,
+    owner: User,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
+    packageType: PackageTypeLiteral,
     packageVersionId: number,
   ): Promise<void> {
     if (owner.type === "User") {
@@ -111,11 +111,11 @@ export class GithubClient implements GithubClientInterface {
   private async getUserPackageVersions(
     username: string,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
+    packageType: PackageTypeLiteral,
     page = 1,
     perPage = defaultPerPage,
-    state: githubModels.PackageVersionStateLiteral = "active",
-  ): Promise<githubModels.PackageVersion[]> {
+    state: PackageVersionStateLiteral = "active",
+  ): Promise<PackageVersion[]> {
     const response = await this.octokitClient.packages.getAllPackageVersionsForPackageOwnedByUser({
       package_type: packageType,
       package_name: packageName,
@@ -132,11 +132,11 @@ export class GithubClient implements GithubClientInterface {
   private async getOrganizationPackageVersions(
     organization: string,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
+    packageType: PackageTypeLiteral,
     page = 1,
     perPage = defaultPerPage,
-    state: githubModels.PackageVersionStateLiteral = "active",
-  ): Promise<githubModels.PackageVersion[]> {
+    state: PackageVersionStateLiteral = "active",
+  ): Promise<PackageVersion[]> {
     const response = await this.octokitClient.packages.getAllPackageVersionsForPackageOwnedByOrg({
       package_type: packageType,
       package_name: packageName,
@@ -153,7 +153,7 @@ export class GithubClient implements GithubClientInterface {
   private async deleteUserPackageVersion(
     username: string,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
+    packageType: PackageTypeLiteral,
     packageVersionId: number,
   ): Promise<void> {
     await this.octokitClient.rest.packages.deletePackageVersionForUser({
@@ -168,7 +168,7 @@ export class GithubClient implements GithubClientInterface {
   private async deleteOrganizationPackageVersion(
     organization: string,
     packageName: string,
-    packageType: githubModels.PackageTypeLiteral,
+    packageType: PackageTypeLiteral,
     packageVersionId: number,
   ): Promise<void> {
     await this.octokitClient.rest.packages.deletePackageVersionForOrg({

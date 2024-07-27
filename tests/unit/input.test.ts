@@ -1,5 +1,6 @@
-import * as input from "../../src/input";
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
+
+import { RawActionInput, parseActionInput } from "../../src/input";
 
 const defaultRawInput = {
   owner: "test_owner",
@@ -14,7 +15,7 @@ const defaultRawInput = {
   githubToken: "test_github_token",
 };
 
-function createRawInput(overrides: Partial<input.RawInput> = {}): input.RawInput {
+function createRawInput(overrides: Partial<RawActionInput> = {}): input.RawActionInput {
   return {
     ...defaultRawInput,
     ...overrides,
@@ -23,7 +24,7 @@ function createRawInput(overrides: Partial<input.RawInput> = {}): input.RawInput
 
 describe("Input tests", () => {
   test("parses raw input correctly", () => {
-    expect(input.parseInput(createRawInput())).toEqual({
+    expect(parseActionInput(createRawInput())).toEqual({
       owner: "test_owner",
       packageName: "test_package_name",
       packageType: "container",
@@ -38,49 +39,49 @@ describe("Input tests", () => {
   });
 
   test("throws error when packageType is invalid", () => {
-    expect(() => input.parseInput(createRawInput({ packageType: "invalid" })).packageType).toThrowError();
+    expect(() => parseActionInput(createRawInput({ packageType: "invalid" })).packageType).toThrowError();
   });
 
   test("parses untagged correctly", () => {
-    expect(input.parseInput(createRawInput({ untagged: "true" })).untagged).toBe(true);
-    expect(input.parseInput(createRawInput({ untagged: "false" })).untagged).toBe(false);
+    expect(parseActionInput(createRawInput({ untagged: "true" })).untagged).toBe(true);
+    expect(parseActionInput(createRawInput({ untagged: "false" })).untagged).toBe(false);
   });
 
   test("throws error when untagged is invalid", () => {
-    expect(() => input.parseInput(createRawInput({ untagged: "invalid" })).untagged).toThrowError();
+    expect(() => parseActionInput(createRawInput({ untagged: "invalid" })).untagged).toThrowError();
   });
 
   test("throws error when expirePeriodDays is invalid", () => {
-    expect(() => input.parseInput(createRawInput({ expirePeriodDays: "invalid" })).expirePeriodDays).toThrowError();
+    expect(() => parseActionInput(createRawInput({ expirePeriodDays: "invalid" })).expirePeriodDays).toThrowError();
   });
 
   test("throws error when expirePeriodDays is negative", () => {
-    expect(() => input.parseInput(createRawInput({ expirePeriodDays: "-1" })).expirePeriodDays).toThrowError();
+    expect(() => parseActionInput(createRawInput({ expirePeriodDays: "-1" })).expirePeriodDays).toThrowError();
   });
 
   test("throws error when retainedTaggedTop is invalid", () => {
-    expect(() => input.parseInput(createRawInput({ retainedTaggedTop: "invalid" })).retainedTaggedTop).toThrowError();
+    expect(() => parseActionInput(createRawInput({ retainedTaggedTop: "invalid" })).retainedTaggedTop).toThrowError();
   });
 
   test("throws error when retainedTaggedTop is negative", () => {
-    expect(() => input.parseInput(createRawInput({ retainedTaggedTop: "-1" })).retainedTaggedTop).toThrowError();
+    expect(() => parseActionInput(createRawInput({ retainedTaggedTop: "-1" })).retainedTaggedTop).toThrowError();
   });
 
   test("parses retainUntagged correctly", () => {
-    expect(input.parseInput(createRawInput({ retainUntagged: "true" })).retainUntagged).toBe(true);
-    expect(input.parseInput(createRawInput({ retainUntagged: "false" })).retainUntagged).toBe(false);
+    expect(parseActionInput(createRawInput({ retainUntagged: "true" })).retainUntagged).toBe(true);
+    expect(parseActionInput(createRawInput({ retainUntagged: "false" })).retainUntagged).toBe(false);
   });
 
   test("throws error when retainUntagged is invalid", () => {
-    expect(() => input.parseInput(createRawInput({ retainUntagged: "invalid" })).retainUntagged).toThrowError();
+    expect(() => parseActionInput(createRawInput({ retainUntagged: "invalid" })).retainUntagged).toThrowError();
   });
 
   test("parses dryRun correctly", () => {
-    expect(input.parseInput(createRawInput({ dryRun: "true" })).dryRun).toBe(true);
-    expect(input.parseInput(createRawInput({ dryRun: "false" })).dryRun).toBe(false);
+    expect(parseActionInput(createRawInput({ dryRun: "true" })).dryRun).toBe(true);
+    expect(parseActionInput(createRawInput({ dryRun: "false" })).dryRun).toBe(false);
   });
 
   test("throws error when dryRun is invalid", () => {
-    expect(() => input.parseInput(createRawInput({ dryRun: "invalid" })).dryRun).toThrowError();
+    expect(() => parseActionInput(createRawInput({ dryRun: "invalid" })).dryRun).toThrowError();
   });
 });
