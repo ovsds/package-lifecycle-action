@@ -11,18 +11,24 @@ Highly recommended to be used with dry-run first to validate the policy before a
 ### Example
 
 ```yaml
-- name: Package Lifecycle
-  id: package-lifecycle
-  uses: ovsds/package-lifecycle-action@v1
-  with:
-    package-name: package-lifecycle-action/test-image
-    package-type: container
-    tag-regex: "^test-tag$"
-    untagged: true
-    expire-period-days: 10
-    retained-tagged-top: 0
-    retain-untagged: true
-    dry-run: true
+jobs:
+  package-lifecycle:
+    permissions:
+      packages: write
+
+    steps:
+      - name: Package Lifecycle
+        id: package-lifecycle
+        uses: ovsds/package-lifecycle-action@v1
+        with:
+          package-name: package-lifecycle-action/test-image
+          package-type: container
+          tag-regex: "^test-tag$"
+          untagged: true
+          expire-period-days: 10
+          retained-tagged-top: 0
+          retain-untagged: true
+          dry-run: true
 ```
 
 ### Action Inputs
@@ -44,8 +50,8 @@ Highly recommended to be used with dry-run first to validate the policy before a
 
 ### Global dependencies
 
-- nvm
-- node
+- [Taskfile](https://taskfile.dev/installation/)
+- [nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script)
 
 ### Taskfile commands
 

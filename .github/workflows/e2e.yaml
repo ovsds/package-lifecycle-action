@@ -9,11 +9,11 @@ on:
 
 jobs:
   e2e-default:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     permissions:
       contents: read
-      packages: read
+      packages: write
 
     steps:
       - name: Checkout repository
@@ -30,3 +30,17 @@ jobs:
           retained-tagged-top: 0
           retain-untagged: true
           dry-run: true
+
+  e2e:
+    runs-on: ubuntu-latest
+    if: always() && !cancelled()
+
+    needs:
+      - e2e-default
+
+    steps:
+      - name: Collect Results
+        uses: ovsds/collect-needs-result-action@v1
+        with:
+          needs_json: ${{ toJson(needs) }}
+          skip_allowed: false
