@@ -15,7 +15,7 @@ const defaultRawInput = {
   githubToken: "test_github_token",
 };
 
-function createRawInput(overrides: Partial<RawActionInput> = {}): input.RawActionInput {
+function createRawInput(overrides: Partial<RawActionInput> = {}): RawActionInput {
   return {
     ...defaultRawInput,
     ...overrides,

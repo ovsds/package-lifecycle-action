@@ -19,14 +19,11 @@ tasks:
   _with_nvm:
     internal: true
     cmds:
-      - "source ${HOME}/.nvm/nvm.sh && nvm use && {{.COMMAND}}"
+      - "source ${HOME}/.nvm/nvm.sh && nvm install && {{.COMMAND}}"
 
   init:
     desc: Initialize project environment
     cmds:
-      - echo 'Installing node version...'
-      - source ${HOME}/.nvm/nvm.sh && nvm install
-
       - echo 'Installing node dependencies...'
       - task: _with_nvm
         vars: { COMMAND: "npm install" }
@@ -73,6 +70,11 @@ tasks:
         vars: { COMMAND: "npm update" }
       - task: _with_nvm
         vars: { COMMAND: "npm outdated" }
+
+  dependencies-check:
+    desc: Check dependencies
+    cmds:
+      - echo 'Checking node dependencies...'
       - task: _with_nvm
         vars: { COMMAND: "npm audit" }
 
@@ -85,8 +87,13 @@ tasks:
         --overwrite-if-exists
         --output-dir ../
         {{.TEMPLATE_PATH}}
-        project_name="Package Lifecycle Action"
-        marketplace_name="Package Lifecycle"
+        project_name='Package Lifecycle Action'
+        project_slug='package-lifecycle-action'
+        marketplace_name='Package Lifecycle'
+        action_type='node20'
+        node_version='v20.15.1'
+        owner_name='Dmitry Ovsiannikov'
+        owner_github_login='ovsds'
     vars:
       TEMPLATE_PATH: '{{.TEMPLATE_PATH | default "https://github.com/ovsds/template-repository-github-action"}}'
 
