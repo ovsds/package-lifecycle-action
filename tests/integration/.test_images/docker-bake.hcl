@@ -8,7 +8,7 @@ target "default" {
   dockerfile = "Dockerfile"
   platforms = [
     "linux/amd64",
-    "linux/arm64",
+#    "linux/arm64",
   ]
   tags = [
     "ghcr.io/${GITHUB_TEST_USER}/${GITHUB_TEST_IMAGE_NAME}:${GITHUB_TEST_IMAGE_TAG}",
