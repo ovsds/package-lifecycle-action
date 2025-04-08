@@ -6,20 +6,20 @@
   "dependencies": {
     "@actions/core": "1.11.1",
     "@actions/github": "6.0.0",
-    "@octokit/rest": "21.0.2"
+    "@octokit/rest": "21.1.1"
   },
   "devDependencies": {
-    "@gravity-ui/eslint-config": "^3.1.1",
+    "@gravity-ui/eslint-config": "^3.3.0",
     "@types/node": "^20.12.7",
     "@typescript-eslint/eslint-plugin": "^7.17.0",
     "@vercel/ncc": "^0.38.1",
     "eslint": "^8.57.0",
-    "vitest": "^2.0.4",
+    "vitest": "^3.1.1",
     "@commitlint/cli": "^19.0.3",
     "@commitlint/config-conventional": "^19.0.3",
     "husky": "^9.1.1",
-    "lint-staged": "^15.2.0",
-    "prettier": "^3.1.1"
+    "lint-staged": "^15.5.0",
+    "prettier": "^3.5.3"
   },
   "hooks": {
     "pre-commit": "lint-staged",
