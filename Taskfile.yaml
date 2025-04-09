@@ -38,11 +38,17 @@ tasks:
       - task: _with_nvm
         vars: { COMMAND: "npm run lint:check" }
 
+      - echo 'Running GHA checks...'
+      - GH_TOKEN="$(gh auth token)" zizmor .
+
   lint-fix:
     desc: Lint fix project
     cmds:
       - task: _with_nvm
         vars: { COMMAND: "npm run lint:fix" }
+
+      - echo 'Running GHA checks...'
+      - GH_TOKEN="$(gh auth token)" zizmor .
 
   test:
     desc: Test project
@@ -68,13 +74,13 @@ tasks:
       - echo 'Updating node dependencies...'
       - task: _with_nvm
         vars: { COMMAND: "npm update" }
-      - task: _with_nvm
-        vars: { COMMAND: "npm outdated" }
 
   dependencies-check:
     desc: Check dependencies
     cmds:
       - echo 'Checking node dependencies...'
+      - task: _with_nvm
+        vars: { COMMAND: "npm outdated" }
       - task: _with_nvm
         vars: { COMMAND: "npm audit" }
 
@@ -94,6 +100,7 @@ tasks:
         node_version='v20.15.1'
         owner_name='Dmitry Ovsiannikov'
         owner_github_login='ovsds'
+        with_zizmor='true'
     vars:
       TEMPLATE_PATH: '{{.TEMPLATE_PATH | default "https://github.com/ovsds/template-repository-github-action"}}'
 
