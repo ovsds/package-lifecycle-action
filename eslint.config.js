@@ -26,6 +26,6 @@ module.exports = [
     },
   },
   {
-    ignores: ["dist/*", "lib/*"],
+    ignores: ["artifacts/", "dist/*", "lib/*"],
   },
 ];
