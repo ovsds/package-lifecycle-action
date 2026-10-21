@@ -4,21 +4,25 @@
   "description": "GitHub Action to delete package versions based on a lifecycle policy",
   "main": "lib/main.js",
   "dependencies": {
-    "@actions/core": "1.11.1",
-    "@actions/github": "6.0.0",
-    "@octokit/rest": "21.1.1"
+    "@actions/core": "3.0.1",
+    "@actions/github": "9.1.1",
+    "@octokit/rest": "22.0.1"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@typescript-eslint/eslint-plugin": "^8.29.1",
-    "@vercel/ncc": "^0.38.1",
-    "eslint": "^9.24.0",
-    "vitest": "^3.1.1",
-    "@commitlint/cli": "^19.0.3",
-    "@commitlint/config-conventional": "^19.0.3",
-    "husky": "^9.1.1",
-    "lint-staged": "^15.5.0",
-    "prettier": "^3.5.3"
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "@typescript-eslint/eslint-plugin": "^8.72.0",
+    "@typescript-eslint/parser": "^8.72.0",
+    "@vercel/ncc": "^0.45.0",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.5",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10"
   },
   "hooks": {
     "pre-commit": "lint-staged",

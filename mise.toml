@@ -1,0 +1,141 @@
+min_version = "2026.10.3"
+
+[tools]
+node = "24.22.0"
+uv = "0.13.1"
+python = "3.15.0"
+"pypi:cookiecutter" = "2.7.1"
+gh = "2.102.0"
+zizmor = "1.31.1"
+
+[settings]
+task.quiet = true
+
+[tasks.init]
+description = "Initialize project environment"
+run = [
+  "echo 'Installing mise tools...'",
+  "mise install",
+
+  "echo 'Installing node dependencies...'",
+  "npm install",
+
+  "echo 'Installing husky pre-commit...'",
+  "npm run prepare",
+]
+
+[tasks.lint]
+description = "Lint project"
+run = [
+  "echo 'Running linters...'",
+  "npm run lint:check",
+
+  "echo 'Running GHA checks...'",
+  'GH_TOKEN="$(gh auth token)" zizmor .',
+]
+
+[tasks.lint-fix]
+description = "Lint fix project"
+run = [
+  "echo 'Running linter fixes...'",
+  "npm run lint:fix",
+
+  "echo 'Running GHA checks...'",
+  'GH_TOKEN="$(gh auth token)" zizmor .',
+]
+
+[tasks.test]
+description = "Test project"
+run = [
+  "echo 'Running tests...'",
+  "npm run test",
+]
+
+[tasks.package]
+description = "Pack project"
+run = [
+  "echo 'Packing project...'",
+  "npm run package",
+]
+
+[tasks.clean]
+description = "Clean project environment"
+run = [
+  "echo 'Cleaning node dependencies...'",
+  "rm -rf node_modules",
+
+  "echo 'Cleaning artifacts and worktrees...'",
+  "rm -rf artifacts",
+  "git worktree prune || true",
+]
+
+[tasks.dependencies-update]
+description = "Update dependencies"
+run = [
+  "echo 'Updating mise tools...'",
+  "mise upgrade --bump",
+
+  "echo 'Updating node dependencies...'",
+  "npm update",
+]
+
+[tasks.dependencies-check]
+description = "Check dependencies"
+run = [
+  "echo 'Checking mise tools...'",
+  "mise outdated",
+
+  "echo 'Checking node dependencies...'",
+  "npm outdated",
+  "npm audit",
+]
+
+[tasks.update-from-template]
+description = "Update project from template; TEMPLATE_PATH=<path> in the environment overrides the source"
+run = [
+  "echo 'Updating project from template...'",
+  '''
+  cookiecutter \
+    --no-input \
+    --overwrite-if-exists \
+    --output-dir ../ \
+    "${TEMPLATE_PATH:-https://github.com/ovsds/template-repository-github-action}" \
+    project_name='Package Lifecycle Action' \
+    project_slug='package-lifecycle-action' \
+    marketplace_name='Package Lifecycle' \
+    action_type='node' \
+    node_version='v24.22.0' \
+    owner_name='Dmitry Ovsiannikov' \
+    owner_github_login='ovsds' \
+    with_zizmor='true' \
+    with_gitleaks='false' \
+    with_shellcheck='false'
+  ''',
+]
+
+[tasks.login-gh-cli]
+description = "Login to GitHub CLI"
+run = "gh auth login --scopes=read:packages,write:packages,delete:packages --hostname github.com --git-protocol https --web"
+
+[tasks.login-ghcr]
+description = "Login to GitHub Container Registry"
+run = "gh config get -h github.com oauth_token | docker login ghcr.io -u USERNAME --password-stdin"
+
+[tasks."github-test-images:configure-docker-container-builder"]
+description = "Configure buildx for multi-arch builds of the integration test images"
+run = "docker buildx create --driver docker-container --use"
+
+[tasks."github-test-images:push"]
+description = "Push the integration test image tags; GITHUB_TEST_* from .scripts/bash/environment_activate"
+dir = "tests/integration/.test_images"
+run = "docker buildx bake --file docker-bake.hcl --push"
+
+[tasks."github-test-images:push-eternal-tag"]
+description = "Push the integration test image eternal tags; GITHUB_TEST_* from .scripts/bash/environment_activate"
+dir = "tests/integration/.test_images"
+run = 'docker build --tag "ghcr.io/${GITHUB_TEST_USER}/${GITHUB_TEST_IMAGE_NAME}:eternal" --tag "ghcr.io/${GITHUB_TEST_ORGANIZATION}/${GITHUB_TEST_IMAGE_NAME}:eternal" --build-arg TEST_ARG=eternal --push .'
+
+[tasks."github-test-images:push-to-delete-tag"]
+description = "Push the integration test image tags to delete; GITHUB_TEST_* from .scripts/bash/environment_activate"
+dir = "tests/integration/.test_images"
+run = 'docker build --tag "ghcr.io/${GITHUB_TEST_USER}/${GITHUB_TEST_IMAGE_NAME}:${GITHUB_TEST_IMAGE_TAG_TO_DELETE}" --tag "ghcr.io/${GITHUB_TEST_ORGANIZATION}/${GITHUB_TEST_IMAGE_NAME}:${GITHUB_TEST_IMAGE_TAG_TO_DELETE}" --build-arg TEST_ARG=to-delete --push .'
